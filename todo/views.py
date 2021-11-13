@@ -7,7 +7,7 @@ from django.contrib.auth import login
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
 from django.shortcuts import redirect
-
+from .forms import TodoForm
 
 # Create your views here.
 def home(request):
@@ -49,9 +49,15 @@ def logout_user(request):
 
 def create_todo(request):
     if request.method == 'GET':
-        return render(request, 'todo/create_todo.html')
-    else:
-        pass
+        return render(request, 'todo/create_todo.html', {'form': TodoForm})
+    try:
+        form = TodoForm(request.POST)
+        new_todo = form.save(commit=False)
+        new_todo.user = request.user
+        new_todo.save()
+        return redirect('current_todos')
+    except ValueError:
+        return render(request, 'todo/create_todo.html', {'form': TodoForm, 'error': 'Bad data passed in. Try Again'})
 
 def current_todos(request):
     return(render(request, 'todo/current_todos.html'))
