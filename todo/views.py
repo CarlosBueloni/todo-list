@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
@@ -6,9 +8,10 @@ from django.db import IntegrityError
 from django.contrib.auth import login
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
-from django.shortcuts import redirect
+
 from .forms import TodoForm
 from .models import Todo
+
 
 # Create your views here.
 def home(request):
@@ -64,3 +67,15 @@ def current_todos(request):
     todos = Todo.objects.filter(user=request.user, date_completed__isnull=True)
     return render(request, 'todo/current_todos.html', {'todos':todos})
 
+def view_todo(request, todo_pk):
+    todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
+    if request.method == 'GET':
+        form = TodoForm(instance=todo)
+        return render(request, 'todo/view_todo.html', {'todo':todo, 'form':form})
+    else:
+        try:
+            form = TodoForm(request.POST, instance=todo)
+            form.save()
+            return redirect('current_todos')
+        except ValueError:
+            return render(request, 'todo/view_todo.html', {'todo':todo, 'form':form, 'error': 'Bad data passed in. Try Again'}) 
