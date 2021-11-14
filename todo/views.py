@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from django.contrib.auth import login
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
+from django.utils import timezone
 
 from .forms import TodoForm
 from .models import Todo
@@ -79,3 +80,16 @@ def view_todo(request, todo_pk):
             return redirect('current_todos')
         except ValueError:
             return render(request, 'todo/view_todo.html', {'todo':todo, 'form':form, 'error': 'Bad data passed in. Try Again'}) 
+
+def complete_todo(request, todo_pk):
+    todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.date_completed = timezone.now()
+        todo.save()
+        return redirect('current_todos')
+
+def delete_todo(request, todo_pk):
+    todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.delete()
+        return redirect('current_todos')
