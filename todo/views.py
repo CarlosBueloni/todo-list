@@ -8,6 +8,7 @@ from django.contrib.auth import logout
 from django.contrib.auth import authenticate
 from django.shortcuts import redirect
 from .forms import TodoForm
+from .models import Todo
 
 # Create your views here.
 def home(request):
@@ -60,5 +61,6 @@ def create_todo(request):
         return render(request, 'todo/create_todo.html', {'form': TodoForm, 'error': 'Bad data passed in. Try Again'})
 
 def current_todos(request):
-    return(render(request, 'todo/current_todos.html'))
+    todos = Todo.objects.filter(user=request.user, date_completed__isnull=True)
+    return render(request, 'todo/current_todos.html', {'todos':todos})
 
